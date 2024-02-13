@@ -3,9 +3,9 @@
 comma: .asciiz ","
 open: .asciiz "["
 close: .asciiz " ]"
-space:	.asciiz " "		# a space string.
-line:	.asciiz	"\n"		# a newline string.
-colon:	.asciiz ": "	# a colon string with space.
+space:	.asciiz " "		
+line:	.asciiz	"\n"		
+colon:	.asciiz ": "	
 array:	.word	0 : 5000	# an array of word, for storing values.
 size:	.word			# will get overwritten once the user enters something else
 
