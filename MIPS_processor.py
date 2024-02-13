@@ -91,11 +91,11 @@ class Processor:
         elif opcode == "000100":  # beq operation
             if rs == rt:
                 offset = immediate
-                self.pc += offset * 4  # Update PC by branch offset
+                self.pc += offset * 4  # need to check if +4 is to be added
         elif opcode == "000101":  # bne operation
             if rs != rt:
                 offset = immediate
-                self.pc += offset * 4  # Update PC by branch offset
+                self.pc += offset * 4
 
     def execute_mem_wb_j_type(self, parsed_instruction):
         opcode = parsed_instruction["opcode"]
