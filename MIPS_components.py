@@ -1,87 +1,20 @@
 class Memory:
     def __init__(self):
         self.memory = {}
-
-
-class Instruction_memory(Memory):
-    def __init__(self):
-        super().__init__()
-        # self.A = 0x00000000
-        # self.RD = 0x00000000
-
-    # def RD(self, A):
-    #     self.A = A
-    #     self.RD = Memory.memory[A]
-    #     return self.RD
-
-    # for simulation purposed not in the control of hte user in actual mips
-    # def write(self, address, data):
-    #     self.memory[address] = data
-
+    
     def read(self, address):
         if address in self.memory:
             return self.memory[address]
         else:
             return None
-
-
-# class InstructionMemory:
-#     def __init__(self, program_file):
-#         self.instructions = self.load_instructions(program_file)
-
-#     def load_instructions(self, program_file):
-#         instructions = []
-#         with open(program_file, 'r') as file:
-#             for line in file:
-#                 # Assuming each line contains a single instruction in hexadecimal format
-#                 instruction = int(line.strip(), 16)
-#                 instructions.append(instruction)
-#         return instructions
-
-#     def read_instruction(self, address):
-#         if address < len(self.instructions):
-#             return self.instructions[address]
-#         else:
-#             raise IndexError("Instruction address out of range")
-
+    
+    def write(self, address, value):
+        if address in self.memory:
+            self.memory[address] = value
+        return
 
 class Register_file:
     def __init__(self):
-        # error: 0x used instead of 0b!
-        # self.registers = {
-        #     0x00000: 0x00000000,  # $0
-        #     0x00001: 0x00000000,  # $at
-        #     0x00010: 0x00000000,  # $v0
-        #     0x00011: 0x00000000,  # $v1
-        #     0x00100: 0x00000000,  # $a0
-        #     0x00101: 0x00000000,  # $a1
-        #     0x00110: 0x00000000,  # $a2
-        #     0x00111: 0x00000000,  # $a3
-        #     0x01000: 0x00000000,  # $t0
-        #     0x01001: 0x00000000,  # $t1
-        #     0x01010: 0x00000000,  # $t2
-        #     0x01011: 0x00000000,  # $t3
-        #     0x01100: 0x00000000,  # $t4
-        #     0x01101: 0x00000000,  # $t5
-        #     0x01110: 0x00000000,  # $t6
-        #     0x01111: 0x00000000,  # $t7
-        #     0x10000: 0x00000000,  # $s0
-        #     0x10001: 0x00000000,  # $s1
-        #     0x10010: 0x00000000,  # $s2
-        #     0x10011: 0x00000000,  # $s3
-        #     0x10100: 0x00000000,  # $s4
-        #     0x10101: 0x00000000,  # $s5
-        #     0x10110: 0x00000000,  # $s6
-        #     0x10111: 0x00000000,  # $s7
-        #     0x11000: 0x00000000,  # $t8
-        #     0x11001: 0x00000000,  # $t9
-        #     0x11010: 0x00000000,  # $k0
-        #     0x11011: 0x00000000,  # $k1
-        #     0x11100: 0x00000000,  # $gp
-        #     0x11101: 0x7FFFEFFC,  # $sp
-        #     0x11110: 0x00000000,  # $fp
-        #     0x11111: 0x00000000,  # $ra
-        # }
 
         self.registers = {
             "00000": 0x00000000,  # $0
@@ -160,22 +93,6 @@ class Register_file:
         self.RD2 = 0x00000000
         self.WD3 = 0x00000000
 
-    def RD1(self, A1):
-        self.A1 = A1
-        self.RD1 = self.registers[self.A1]
-        return self.RD1
-
-    def RD2(self, A2):
-        self.A2 = A2
-        self.RD2 = self.registers[self.A2]
-        return self.RD2
-
-    def WB(self, A3, WD3):
-        self.A3 = A3
-        self.WD3 = WD3
-        self.registers[self.A3] = self.WD3
-        return
-
     def read_register(self, register):
         if register in self.registers:
             return self.registers[register]
@@ -205,37 +122,9 @@ class ALU:
 
     def execute_operation(self, opcode):
         if opcode == "100000":  # add operation
-            self.execute_add()
+            self.ALU_result = self.srcA + self.srcB
         elif opcode == "100010":  # sub operation
-            self.execute_sub()
-
-    def execute_add(self):
-        self.ALU_result = self.srcA + self.srcB
-
-    def execute_sub(self):
-        self.ALU_result = self.srcA - self.srcB
-
-
-class Data_Memory(Memory):
-    def __init__(self):
-        super().__init__()
-        self.A = 0x00000000
-        self.WD = 0x00000000
-        self.RD = 0x00000000
-
-    def RD(self, A):
-        self.A = A
-        self.RD = Memory.memory[self.A]
-        return self.RD
-
-    def WB(self, A, WD):
-        self.A = A
-        self.WD = WD
-        Memory.memory[self.A] = self.WD
-        return
-
-    def read(self, address):
-        return self.memory.get(address, 0x00000000)  # ret 0 if add not found
+            self.ALU_result = self.srcA - self.srcB
 
 
 class Adder:
