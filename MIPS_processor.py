@@ -6,11 +6,8 @@ class Processor:
         self.mem = Memory()
         self.reg_file = Register_file()
         self.alu = ALU()
-        self.sign_extender = Sign_extend()
         self.Left_shifter = Left_shifter()
         self.pc = 0x00400000
-        # self.pc = 0x00000000
-        # self.pc = 0
 
     def print_instruction_memory(self):
         print("-----------------------------------Ins Mem-----------------------------------")
@@ -86,7 +83,6 @@ class Processor:
         opcode = parsed_instruction["opcode"]
         immediate_bin = parsed_instruction["immediate"]
         immediate = int(parsed_instruction["immediate"], 2)  # convert it to an integer
-        immediate = self.sign_extender.extend(immediate)
 
         # take care of negative values of immediate
         if immediate_bin[0] == "1":

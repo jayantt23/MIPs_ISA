@@ -126,26 +126,6 @@ class ALU:
         elif opcode == "100010":  # sub operation
             self.ALU_result = self.srcA - self.srcB
 
-
-class Adder:
-    def __init__(self):
-        pass
-
-    def add(self, A, B):
-        return A + B
-
-
-class Sign_extend:
-    def __init__(self):
-        self.imm = 0x0000
-        self.sign_imm = 0x00000000
-
-    def extend(self, imm):
-        self.imm = imm
-        self.sign_imm = 0x00000000 | self.imm
-        return self.sign_imm
-
-
 class Left_shifter:
     def __init__(self):
         pass
