@@ -3,6 +3,9 @@ from MIPS_components import *
 
 class Processor:
     def __init__(self):
+        """
+        Constructor for initializing memory, register file, ALU, left shifter, and program counter.
+        """
         self.mem = Memory()
         self.reg_file = Register_file()
         self.alu = ALU()
@@ -10,11 +13,15 @@ class Processor:
         self.pc = 0x00400000
 
     def print_instruction_memory(self):
-        print("-----------------------------------Ins Mem-----------------------------------")
+        print(
+            "-----------------------------------Ins Mem-----------------------------------"
+        )
         print("Printing instruction memory........")
         for address, ins in self.mem.memory.items():
             print(f"{address} : {ins}")
-        print("-----------------------------------------------------------------------------")
+        print(
+            "-----------------------------------------------------------------------------"
+        )
 
     def print_state(self):
         print("Processor State:")
@@ -26,6 +33,9 @@ class Processor:
             )
 
     def fetch(self):
+        """
+        Fetches the next instruction from memory, increments the program counter, and returns the fetched instruction as a 32-bit binary string.
+        """
         if self.pc not in self.mem.memory:
             print("\nFinished\n")
             return
@@ -34,6 +44,9 @@ class Processor:
         return instruction
 
     def decode(self, instruction):
+        """
+        Decode the given instruction and return a dictionary with the parsed components.
+        """
         # here indexing is left to right
         opcode = instruction[0:6]
         rs = instruction[6:11]
@@ -60,6 +73,12 @@ class Processor:
         return parsed_instruction
 
     def execute_mem_wb_r_type(self, parsed_instruction):
+        """
+        Execute the execute, memory, and write back  stage of the R-type instruction.
+        Parses the instruction to determine the operation to be executed.
+        Updates the ALU source registers and executes the corresponding operation.
+        Writes the result back to the destination register.
+        """
         funct = parsed_instruction["funct"]
         print(f"funct is {funct}\n")
         if funct == "100000":  # add operation
@@ -70,6 +89,7 @@ class Processor:
             self.alu.srcB = rt
             self.alu.execute_operation("100000")  # add operation
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
+
         elif funct == "100010":  # sub operation
             print("Executing sub operation")
             rs = self.reg_file.read_register(parsed_instruction["rs"])
@@ -79,7 +99,18 @@ class Processor:
             self.alu.execute_operation("100010")  # sub operation
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
 
+        elif funct == "001000":  # jr operation
+            print("Executing jr operation")
+            rs = parsed_instruction["rs"]
+            target_address = self.reg_file.read_register(rs)
+            self.pc = target_address
+
     def execute_mem_wb_i_type(self, parsed_instruction):
+        """
+        Execute the execute, memory, and memory-write back stage for the I-type instruction.
+        This function takes the parsed instruction as input and performs the required operation based on the opcode.
+        It updates the registers and memory as per the operation specified in the instruction.
+        """
         opcode = parsed_instruction["opcode"]
         immediate_bin = parsed_instruction["immediate"]
         immediate = int(parsed_instruction["immediate"], 2)  # convert it to an integer
@@ -118,18 +149,45 @@ class Processor:
             if rs != rt:
                 offset = immediate
                 self.pc += offset * 4
-        elif opcode == "001111": #lui operation
+        elif opcode == "001111":  # lui operation
             print("Executing lui operation")
             immediate = immediate << 16
             value = rt | immediate
             self.reg_file.write_register(parsed_instruction["rt"], value)
 
+        elif opcode == "000111":  # ble operation
+            print("Executing ble operation")
+            if rs <= rt:
+                offset = immediate
+                self.pc += offset * 4
+
+        elif opcode == "000011":  # li operation
+            print("Executing li operation")
+            self.reg_file.write_register(parsed_instruction["rt"], immediate)
+        elif opcode == "000010":  # la operation
+            print("Executing la operation")
+            address = rs + immediate
+            data = self.mem.read(address)
+            self.reg_file.write_register(parsed_instruction["rt"], data)
+
+        elif opcode == "000100":  # subi operation
+            print("Executing subi operation")
+            result = rs - immediate
+            self.reg_file.write_register(parsed_instruction["rt"], result)
+
     def execute_mem_wb_j_type(self, parsed_instruction):
         opcode = parsed_instruction["opcode"]
-        if opcode == "000010":
+        if opcode == "000010":  # j ( jump)
             print("Executing jmp operation")
             address = int(parsed_instruction["address"], 2)
             updated_pc = self.Left_shifter.shift(address)
+            self.pc = updated_pc
+
+        elif opcode == "000011":  # jal (jump and link)
+            print("Executing jal operation")
+            address = int(parsed_instruction["address"], 2)
+            updated_pc = self.Left_shifter.shift(address)
+            self.reg_file.write_register("$ra", self.pc + 4)
             self.pc = updated_pc
 
     def store_instructions(self, file_name):
@@ -141,11 +199,11 @@ class Processor:
         # fill the instruction memory, this is for simulation purposes only
 
         for instruction in machine_code:
-            if(instruction.strip()):
+            if instruction.strip():
                 x = instruction.split()
                 address = int(x[0], 16)
                 instruction = x[1]
-                
+
                 self.mem.memory[address] = int(instruction, 2)
 
     def execute_instruction(self):
@@ -178,7 +236,7 @@ class Processor:
                 "001100",
                 "001101",
                 "001010",
-                "001111"
+                "001111",
             ]:
                 print("I type instruction \n")
                 self.execute_mem_wb_i_type(parsed_instruction)
