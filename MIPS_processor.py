@@ -101,11 +101,11 @@ class Processor:
         opcode = parsed_instruction["opcode"]
         if opcode == "000010":
             address = int(parsed_instruction["address"], 2)
-            address = parsed_instruction["address"]
+            # address = parsed_instruction["address"]
             updated_pc = self.Left_shifter.shift(int(address, 2))
-            updated_pc = (
-                updated_pc >> 4
-            )  # this is technically done by taking 4 zero lines from the bus with pc + 4
+            updated_pc = updated_pc << 4
+
+            # this is technically done by taking 4 zero lines from the bus with pc + 4
             self.pc = updated_pc
 
     def parse_instruction(self, instruction):

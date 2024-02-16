@@ -25,26 +25,6 @@ class Instruction_memory(Memory):
             return None
 
 
-# class InstructionMemory:
-#     def __init__(self, program_file):
-#         self.instructions = self.load_instructions(program_file)
-
-#     def load_instructions(self, program_file):
-#         instructions = []
-#         with open(program_file, 'r') as file:
-#             for line in file:
-#                 # Assuming each line contains a single instruction in hexadecimal format
-#                 instruction = int(line.strip(), 16)
-#                 instructions.append(instruction)
-#         return instructions
-
-#     def read_instruction(self, address):
-#         if address < len(self.instructions):
-#             return self.instructions[address]
-#         else:
-#             raise IndexError("Instruction address out of range")
-
-
 class Register_file:
     def __init__(self):
         # error: 0x used instead of 0b!
