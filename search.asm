@@ -1,8 +1,9 @@
 .data
 array:      .word   1, 4, 3, 2, 7, 6         # Initial array
-search_value: .word -5                     # Value to search for
+search_value: .word 7                     # Value to search for
 
 array_size: .word 6                           # Size of the array
+ans:
 
 .text
 .globl main
@@ -29,7 +30,5 @@ element_found:
     j exit
 
 exit:
-li $v0, 10
-syscall
-
-  
+    li $v0, 10
+    sw $t2, ans

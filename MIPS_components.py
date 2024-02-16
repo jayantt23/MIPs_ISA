@@ -15,7 +15,6 @@ class Memory:
 
 class Register_file:
     def __init__(self):
-
         self.registers = {
             "00000": 0x00000000,  # $0
             "00001": 0x00000000,  # $at
@@ -86,13 +85,6 @@ class Register_file:
             "11111": "$ra",
         }
 
-        self.A1 = 0b00000
-        self.A2 = 0b00000
-        self.A3 = 0b00000
-        self.RD1 = 0x00000000
-        self.RD2 = 0x00000000
-        self.WD3 = 0x00000000
-
     def read_register(self, register):
         if register in self.registers:
             return self.registers[register]
@@ -100,11 +92,7 @@ class Register_file:
             return None
 
     def write_register(self, register, value):
-        print(
-            f"Writing to register {register} ({self.get_register_name(register)}): {value}\n"
-        )
         self.registers[register] = value
-        print(f"Changed made {register} : {self.registers[register]}")
 
     def get_register_name(self, register):
         if register in self.register_names:
@@ -125,10 +113,8 @@ class ALU:
             self.ALU_result = self.srcA + self.srcB
         elif opcode == "100010":  # sub operation
             self.ALU_result = self.srcA - self.srcB
-
-class Left_shifter:
-    def __init__(self):
-        pass
-
-    def shift(self, A):
-        return A << 2
+        elif opcode == "101010": # slt operation
+            if self.srcA<self.srcB:
+                self.ALU_result = 1
+            else:
+                self.ALU_result = 0
