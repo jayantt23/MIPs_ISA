@@ -10,6 +10,8 @@ def prCyan(skk):
 
 
 class Processor:
+    """Processor Class representing a MIPS processor"""
+
     def __init__(self):
         self.mem = Memory()
         self.reg_file = Register_file()
@@ -17,6 +19,7 @@ class Processor:
         self.pc = 0x00400000
 
     def fetch(self):
+        """Fetch the next instruction from memory."""
         if self.pc not in self.mem.memory:
             print("\nFinished\n")
             return
@@ -26,6 +29,7 @@ class Processor:
         return instruction
 
     def decode(self, instruction):
+        """Decode the instruction and extract its fields."""
         # here indexing is left to right
         opcode = instruction[0:6]
         rs = instruction[6:11]
@@ -57,8 +61,8 @@ class Processor:
 
             instruction = self.fetch()
             print(f"Instruction returned from fetch cycle is {instruction}")
-            if instruction == "halt":  # look up what shoud go here
-                break
+            # if instruction == "halt":  # look up what shoud go here
+            #     break
 
             if not instruction:
                 break
@@ -89,6 +93,7 @@ class Processor:
                 self.execute_mem_wb_j_type(parsed_instruction)
 
     def execute_mem_wb_r_type(self, parsed_instruction):
+        """For execute mem wb of r type instructions"""
         funct = parsed_instruction["funct"]
         rs = self.reg_file.read_register(parsed_instruction["rs"])
         rt = self.reg_file.read_register(parsed_instruction["rt"])
@@ -116,6 +121,8 @@ class Processor:
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
 
     def execute_mem_wb_i_type(self, parsed_instruction):
+        """For execute mem wb of i type instructions"""
+
         opcode = parsed_instruction["opcode"]
         immediate_bin = parsed_instruction["immediate"]
         immediate = int(parsed_instruction["immediate"], 2)  # convert it to an integer
@@ -167,6 +174,8 @@ class Processor:
             self.reg_file.write_register(parsed_instruction["rt"], value)
 
     def execute_mem_wb_j_type(self, parsed_instruction):
+        """For execute mem wb of j type instructions"""
+
         opcode = parsed_instruction["opcode"]
         if opcode == "000010":
             prPurple("Executing jmp operation")
@@ -184,6 +193,7 @@ class Processor:
                 if address < 0x10010000:
                     instruction = int(x[1], 2)
                 else:
+                    # handle negative numberss
                     if x[1][0] == "1":
                         instruction = -(2**32 - int(x[1], 2))
                     else:
