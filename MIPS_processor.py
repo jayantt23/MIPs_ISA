@@ -1,6 +1,7 @@
 from MIPS_components import *
 
 
+# functions for formatting output shown in CLI
 def prPurple(skk):
     print("\033[95m {}\033[00m".format(skk))
 
@@ -10,7 +11,7 @@ def prCyan(skk):
 
 
 class Processor:
-    """Processor Class representing a MIPS processor"""
+    """Class for representing a MIPS processor, initialized with its components, and methods for different stages of the 5 stage cycle and for printing the state"""
 
     def __init__(self):
         self.mem = Memory()
@@ -19,7 +20,11 @@ class Processor:
         self.pc = 0x00400000
 
     def fetch(self):
-        """Fetch the next instruction from memory."""
+        """Fetch the next instruction from memory.
+        It takes no parameters
+        Returns:
+        - str: 32 bit Binary representation of the fetched instruction.
+        """
         if self.pc not in self.mem.memory:
             print("\nFinished\n")
             return
@@ -29,8 +34,13 @@ class Processor:
         return instruction
 
     def decode(self, instruction):
-        """Decode the instruction and extract its fields."""
-        # here indexing is left to right
+        """Decode the instruction and extract its fields.
+        Parameters:
+        - instruction (str): Binary representation of the instruction to be decoded.
+
+        Returns:
+        - dict: Dictionary containing the parsed fields of the instruction."""
+        # here indexing is left to right as instruction is python string
         opcode = instruction[0:6]
         rs = instruction[6:11]
         rt = instruction[11:16]
@@ -56,6 +66,8 @@ class Processor:
         return parsed_instruction
 
     def execute_instruction(self):
+        """method to call fetch, decode, and then call the respective functions for the rest of the stages based on opcode
+        - no parameters"""
 
         while True:
 
@@ -93,7 +105,10 @@ class Processor:
                 self.execute_mem_wb_j_type(parsed_instruction)
 
     def execute_mem_wb_r_type(self, parsed_instruction):
-        """For execute mem wb of r type instructions"""
+        """For execute mem wb of r type instructions
+        Params:
+        - parsed_instruction(dict): Parsed Fields of instruction"""
+
         funct = parsed_instruction["funct"]
         rs = self.reg_file.read_register(parsed_instruction["rs"])
         rt = self.reg_file.read_register(parsed_instruction["rt"])
@@ -121,7 +136,9 @@ class Processor:
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
 
     def execute_mem_wb_i_type(self, parsed_instruction):
-        """For execute mem wb of i type instructions"""
+        """For execute mem wb of i type instructions
+        parameters:
+        - parsed instruction ( dict): Parsed fields of the instruction"""
 
         opcode = parsed_instruction["opcode"]
         immediate_bin = parsed_instruction["immediate"]
@@ -174,7 +191,9 @@ class Processor:
             self.reg_file.write_register(parsed_instruction["rt"], value)
 
     def execute_mem_wb_j_type(self, parsed_instruction):
-        """For execute mem wb of j type instructions"""
+        """For execute mem wb of j type instructions
+        parameters:
+        - parsed instruction ( dict): Parsed fields of the"""
 
         opcode = parsed_instruction["opcode"]
         if opcode == "000010":
@@ -183,6 +202,12 @@ class Processor:
             self.pc = address << 2
 
     def store_instructions(self, file_name):
+        """
+        Store instructions from source txt file into memory.
+
+        Parameters:
+        - file_name (.txt): Name of the file containing instructions.
+        """
         with open(file_name, "r") as file:
             machine_code = file.readlines()
 

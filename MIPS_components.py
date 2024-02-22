@@ -1,20 +1,26 @@
 class Memory:
+    """Class for MIPS  memory with read and write"""
+
     def __init__(self):
         self.memory = {}
-    
+
     def read(self, address):
         if address in self.memory:
             return self.memory[address]
         else:
             return None
-    
+
     def write(self, address, value):
         if address in self.memory:
             self.memory[address] = value
         return
 
+
 class Register_file:
+    """Class for MIPS register file with two dictionaries containing the registers being mapped to their respective 5 bit values and their names, with class methods to read, write and get the name of the register ( for simulation purposes)"""
+
     def __init__(self):
+        # all registers initialized with zero other than stack pointer
         self.registers = {
             "00000": 0x00000000,  # $0
             "00001": 0x00000000,  # $at
@@ -102,6 +108,8 @@ class Register_file:
 
 
 class ALU:
+    """Class for MIPS ALU with class method for executing operations"""
+
     def __init__(self):
         self.srcA = 0x00000000
         self.srcB = 0x00000000
@@ -113,8 +121,8 @@ class ALU:
             self.ALU_result = self.srcA + self.srcB
         elif opcode == "100010":  # sub operation
             self.ALU_result = self.srcA - self.srcB
-        elif opcode == "101010": # slt operation
-            if self.srcA<self.srcB:
+        elif opcode == "101010":  # slt operation
+            if self.srcA < self.srcB:
                 self.ALU_result = 1
             else:
                 self.ALU_result = 0
