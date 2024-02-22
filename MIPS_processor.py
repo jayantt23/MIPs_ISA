@@ -1,8 +1,13 @@
 from MIPS_components import *
 
-def prPurple(skk): print("\033[95m {}\033[00m" .format(skk))
 
-def prCyan(skk): print("\033[96m {}\033[00m" .format(skk))
+def prPurple(skk):
+    print("\033[95m {}\033[00m".format(skk))
+
+
+def prCyan(skk):
+    print("\033[96m {}\033[00m".format(skk))
+
 
 class Processor:
     def __init__(self):
@@ -45,7 +50,7 @@ class Processor:
         print(f"parsed instruction is {parsed_instruction}")
 
         return parsed_instruction
-    
+
     def execute_instruction(self):
 
         while True:
@@ -75,7 +80,7 @@ class Processor:
                 "001101",
                 "001010",
                 "001111",
-                "001101"
+                "001101",
             ]:
                 prCyan("I type instruction")
                 self.execute_mem_wb_i_type(parsed_instruction)
@@ -97,15 +102,15 @@ class Processor:
             prPurple("Executing sub operation")
             self.alu.execute_operation("100010")  # sub operation
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
-        elif funct == "101010": # slt operation
+        elif funct == "101010":  # slt operation
             prPurple("Executing slt operation")
-            self.alu.execute_operation("101010") # slt operation
+            self.alu.execute_operation("101010")  # slt operation
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
-        elif funct == "100001": # addu operation
+        elif funct == "100001":  # addu operation
             prPurple("Executing addu operation")
-            if(self.alu.srcA<0):
+            if self.alu.srcA < 0:
                 self.alu.srcA = -self.alu.srcA
-            if(self.alu.srcB<0):
+            if self.alu.srcB < 0:
                 self.alu.srcB = -self.alu.srcB
             self.alu.execute_operation("100000")  # add operation
             self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
@@ -136,13 +141,13 @@ class Processor:
             prPurple("Executing addi operation")
             result = rs + immediate
             self.reg_file.write_register(parsed_instruction["rt"], result)
-        elif opcode == "001001": # addiu operation
+        elif opcode == "001001":  # addiu operation
             prPurple("Executing addiu operation")
-            if(rs<0):
+            if rs < 0:
                 rs = -rs
             result = rs + immediate
             self.reg_file.write_register(parsed_instruction["rt"], result)
-        elif opcode == "001101": # ori operation
+        elif opcode == "001101":  # ori operation
             prPurple("Executing ori operation")
             result = rs | immediate
             self.reg_file.write_register(parsed_instruction["rt"], result)
@@ -156,7 +161,7 @@ class Processor:
             if rs != rt:
                 offset = immediate
                 self.pc += offset * 4
-        elif opcode == "001111": #lui operation
+        elif opcode == "001111":  # lui operation
             prPurple("Executing lui operation")
             value = 0x10010000
             self.reg_file.write_register(parsed_instruction["rt"], value)
@@ -166,32 +171,36 @@ class Processor:
         if opcode == "000010":
             prPurple("Executing jmp operation")
             address = int(parsed_instruction["address"], 2)
-            self.pc = address<<2
-    
+            self.pc = address << 2
+
     def store_instructions(self, file_name):
         with open(file_name, "r") as file:
             machine_code = file.readlines()
 
         for instruction in machine_code:
-            if(instruction.strip()):
+            if instruction.strip():
                 x = instruction.split()
                 address = int(x[0], 16)
-                if(address<0x10010000):
+                if address < 0x10010000:
                     instruction = int(x[1], 2)
                 else:
-                    if(x[1][0] == '1'):
-                        instruction = -(2 ** 32 - int(x[1], 2))
+                    if x[1][0] == "1":
+                        instruction = -(2**32 - int(x[1], 2))
                     else:
                         instruction = int(x[1], 2)
-                
+
                 self.mem.memory[address] = instruction
-    
+
     def print_instruction_memory(self):
-        print("-----------------------------------Ins Mem-----------------------------------")
+        print(
+            "-----------------------------------Ins Mem-----------------------------------"
+        )
         print("Printing instruction memory........")
         for address, ins in self.mem.memory.items():
             print(f"{address} : {ins}")
-        print("-----------------------------------------------------------------------------")
+        print(
+            "-----------------------------------------------------------------------------"
+        )
 
     def print_state(self):
         print("Processor State:")
@@ -202,11 +211,12 @@ class Processor:
                 f"Register ${int(reg_num):02d}({self.reg_file.get_register_name(reg_num)}): {hex(reg_val)}"
             )
 
+
 if __name__ == "__main__":
 
     processor = Processor()
 
-    processor.store_instructions("./search.txt")
+    processor.store_instructions("./insertion_sort.txt")
     processor.print_instruction_memory()
     processor.execute_instruction()
 

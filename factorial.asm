@@ -3,6 +3,8 @@ n: 10
 ans:
 
 .text
+.globl main
+main:
 	lw $s0, n
 	addi $s0, $s0, 1
 	addi $t0, $0, 1
