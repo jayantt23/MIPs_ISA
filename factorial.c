@@ -1,5 +1,4 @@
-#include <iostream>
-using namespace std;
+#include <stdio.h>
 
 int factorial(int n)
 {
@@ -15,6 +14,6 @@ int main()
 {
     int n = 10;
     int ans = factorial(n);
-    cout << ans << endl;
+    printf("%d\n", ans);
     return 0;
 }

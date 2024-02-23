@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 
 void insertionSort(int arr[], int n)
 {
@@ -19,32 +19,32 @@ void insertionSort(int arr[], int n)
 int main()
 {
     int n;
-    std::cout << "Input array size ([0,5000]): ";
-    std::cin >> n;
+    printf("Input array size ([0,5000]): ");
+    scanf("%d", &n);
 
     int arr[n];
     for (int i = 0; i < n; ++i)
     {
-        std::cout << "Input value " << i + 1 << ": ";
-        std::cin >> arr[i];
+        printf("Input value %d: ", i + 1);
+        scanf("%d", &arr[i]);
     }
 
-    std::cout << "Unsorted array given as input: ";
+    printf("Unsorted array given as input: ");
 
     for (int i = 0; i < n; ++i)
     {
-        std::cout << arr[i] << " ";
+        printf("%d ", arr[i]);
     }
 
-    std::cout << std::endl;
+    printf("\n");
 
     insertionSort(arr, n);
 
     for (int i = 0; i < n; ++i)
     {
-        std::cout << arr[i] << " ";
+        printf("%d ", arr[i]);
     }
-    std::cout << std::endl;
+    printf("\n");
 
     return 0;
 }
