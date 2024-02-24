@@ -1,5 +1,5 @@
 .data
-n: 10
+n: 5
 ans:
 
 .text

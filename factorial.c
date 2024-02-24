@@ -12,7 +12,7 @@ int factorial(int n)
 
 int main()
 {
-    int n = 10;
+    int n = 5;
     int ans = factorial(n);
     printf("%d\n", ans);
     return 0;

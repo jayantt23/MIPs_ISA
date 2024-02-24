@@ -4,7 +4,7 @@ int main()
 {
     int array[] = {1, 4, 3, 2, 7, 6};
     int array_size = sizeof(array) / sizeof(array[0]);
-    int search_value = 5;
+    int search_value = 7;
     int index_result = -1;
 
     for (int i = 0; i < array_size; ++i)
