@@ -126,3 +126,20 @@ class ALU:
                 self.ALU_result = 1
             else:
                 self.ALU_result = 0
+
+
+class SignExtender:
+    """Class for sign extending 16-bit immediate values to 32-bit"""
+
+    def extend(immediate):
+
+        sign_bit = immediate[0]
+        return sign_bit * (32 - len(immediate)) + immediate
+
+
+class LeftShiftByTwo:
+    """Class for left shifting a binary string by two positions"""
+
+    def shift(binary_string):
+
+        return binary_string + "00"

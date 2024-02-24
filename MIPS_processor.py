@@ -19,6 +19,17 @@ class Processor:
         self.alu = ALU()
         self.pc = 0x00400000
 
+        self.control_signals = {
+            "reg_dst": 1,  # just some default values
+            "alu_src": 1,
+            "mem_to_reg": 0,
+            "mem_read": 0,
+            "mem_write": 0,
+            "branch": 0,
+            "alu_op": "add",  #  can make it into number, basically solve the k-maps for all the instructions we have implemented
+            "reg_write": 0,
+        }
+
     def fetch(self):
         """Fetch the next instruction from memory.
         It takes no parameters
@@ -50,6 +61,75 @@ class Processor:
         address = instruction[6:32]
         immediate = instruction[16:32]
 
+        if opcode == "000000":
+            # if its r format, we use rd ie 15:11 as destination so reg dst is 1
+            # alu scr, we use rt and not immediate so its 0
+            # mem to reg, its dont care
+            # mem read adn write would be zero
+            # branch would be zero
+            self.control_signals["reg_dst"] = 1
+            self.control_signals["alu_src"] = 0
+            self.control_signals["mem_to_reg"] = 0
+            self.control_signals["mem_read"] = 0
+            self.control_signals["mem_write"] = 0
+            self.control_signals["branch"] = 0
+            self.control_signals["reg_write"] = 1
+
+            if funct == "100000":
+                self.control_signals["alu_op"] = "add"
+            elif funct == "100010":
+                self.control_signals["alu_op"] = "sub"
+            elif funct == "101010":
+                self.control_signals["alu_op"] = "slt"
+
+        elif opcode in [
+            "001000",
+            "001001",
+            "101011",
+            "100011",
+            "000100",
+            "000101",
+            "001100",
+            "001101",
+            "001010",
+            "001111",
+            "001101",
+        ]:
+            self.control_signals["reg_dst"] = 0
+            self.control_signals["alu_src"] = 1
+            self.control_signals["mem_to_reg"] = (
+                1 if opcode in ["001000", "001001"] else 0
+            )
+            self.control_signals["mem_read"] = 1 if opcode == "100011" else 0
+            self.control_signals["mem_write"] = 1 if opcode == "101011" else 0
+            self.control_signals["branch"] = 1 if opcode in ["000100", "000101"] else 0
+            self.control_signals["reg_write"] = 1
+            self.control_signals["alu_op"] = (
+                "add"
+                if opcode
+                in [
+                    "001000",
+                    "001001",
+                    "101011",
+                    "001100",
+                    "001101",
+                    "001010",
+                    "001111",
+                    "001101",
+                ]
+                else "sub"  # for branch
+            )
+
+        elif opcode in ["000010"]:
+            self.control_signals["reg_write"] = 0
+            self.control_signals["reg_dst"] = 0  # since j type don't care
+            self.control_signals["alu_src"] = 0  # don't care
+            self.control_signals["mem_to_reg"] = 0  # don't care
+            self.control_signals["mem_read"] = 0
+            self.control_signals["mem_write"] = 0
+            self.control_signals["branch"] = 1
+            self.control_signals["alu_op"] = "sub"
+
         parsed_instruction = {
             "opcode": opcode,
             "rs": rs,
@@ -59,6 +139,7 @@ class Processor:
             "funct": funct,
             "address": address,
             "immediate": immediate,
+            "control_signals": self.control_signals,
         }
 
         print(f"parsed instruction is {parsed_instruction}")
