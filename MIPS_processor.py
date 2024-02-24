@@ -97,9 +97,7 @@ class Processor:
         ]:
             self.control_signals["reg_dst"] = 0
             self.control_signals["alu_src"] = 1
-            self.control_signals["mem_to_reg"] = (
-                1 if opcode in ["001000", "001001"] else 0
-            )
+            self.control_signals["mem_to_reg"] = 1 if opcode in ["001000", "001001"] else 0
             self.control_signals["mem_read"] = 1 if opcode == "100011" else 0
             self.control_signals["mem_write"] = 1 if opcode == "101011" else 0
             self.control_signals["branch"] = 1 if opcode in ["000100", "000101"] else 0
