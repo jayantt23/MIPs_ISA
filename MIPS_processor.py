@@ -145,8 +145,8 @@ class Processor:
         return parsed_instruction
 
     def execute_instruction(self):
-        """method to call fetch, decode, and then call the respective functions for the rest of the stages based on opcode
-        - no parameters"""
+        """method to call fetch, decode, and then call the respective functions for the rest 
+        of the stages based on opcode - no parameters"""
 
         while True:
 
