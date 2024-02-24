@@ -126,6 +126,8 @@ class ALU:
                 self.ALU_result = 1
             else:
                 self.ALU_result = 0
+        elif opcode == "001101": # or operation
+            self.ALU_result = self.srcA | self.srcB
 
 
 class SignExtender:

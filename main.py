@@ -11,6 +11,7 @@ def main():
     processor.execute_instruction()
 
     processor.print_state()
+    processor.print_instruction_memory()
 
 
 main()

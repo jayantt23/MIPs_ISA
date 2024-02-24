@@ -179,15 +179,12 @@ class Processor:
         if funct == "100000":  # add operation
             prPurple("Executing add operation")
             self.alu.execute_operation("100000")  # add operation
-            self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
         elif funct == "100010":  # sub operation
             prPurple("Executing sub operation")
             self.alu.execute_operation("100010")  # sub operation
-            self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
         elif funct == "101010":  # slt operation
             prPurple("Executing slt operation")
             self.alu.execute_operation("101010")  # slt operation
-            self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
         elif funct == "100001":  # addu operation
             prPurple("Executing addu operation")
             if self.alu.srcA < 0:
@@ -195,7 +192,9 @@ class Processor:
             if self.alu.srcB < 0:
                 self.alu.srcB = -self.alu.srcB
             self.alu.execute_operation("100000")  # add operation
-            self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
+        
+        self.mem_read()
+        self.write_back(parsed_instruction)
 
     def execute_mem_wb_i_type(self, parsed_instruction):
         """For execute mem wb of i type instructions
@@ -212,45 +211,50 @@ class Processor:
 
         rs = self.reg_file.read_register(parsed_instruction["rs"])
         rt = self.reg_file.read_register(parsed_instruction["rt"])
-
+        self.alu.srcA = rs
+        self.alu.srcB = immediate
         if opcode == "100011":  # lw operation
             prPurple("Executing lw operation")
-            address = rs + immediate
-            data = self.mem.read(address)
+            self.alu.execute_operation("100000")
+            data = self.mem_read()
             self.reg_file.write_register(parsed_instruction["rt"], data)
+            return
         elif opcode == "101011":  # sw operation
             prPurple("Executing sw operation")
-            address = rs + immediate
+            self.alu.execute_operation("100000")
             data = rt
-            self.mem.write(address, data)
+            self.mem_read()
+            self.mem.write(self.alu.ALU_result, data)
+            return
         elif opcode == "001000":  # addi operation
             prPurple("Executing addi operation")
-            result = rs + immediate
-            self.reg_file.write_register(parsed_instruction["rt"], result)
+            self.alu.execute_operation("100000")
         elif opcode == "001001":  # addiu operation
             prPurple("Executing addiu operation")
             if rs < 0:
                 rs = -rs
-            result = rs + immediate
-            self.reg_file.write_register(parsed_instruction["rt"], result)
+            self.alu.execute_operation("100000")
         elif opcode == "001101":  # ori operation
             prPurple("Executing ori operation")
-            result = rs | immediate
-            self.reg_file.write_register(parsed_instruction["rt"], result)
+            self.alu.execute_operation("100000")
         elif opcode == "000100":  # beq operation
             prPurple("Executing beq operation")
             if rs == rt:
                 offset = immediate
                 self.pc += offset * 4  # need to check if +4 is to be added
+            return
         elif opcode == "000101":  # bne operation
             prPurple("Executing bne operation")
             if rs != rt:
                 offset = immediate
                 self.pc += offset * 4
+            return
         elif opcode == "001111":  # lui operation
             prPurple("Executing lui operation")
-            value = 0x10010000
-            self.reg_file.write_register(parsed_instruction["rt"], value)
+            self.alu.ALU_result = immediate << 16
+        
+        self.mem_read()
+        self.write_back(parsed_instruction)
 
     def execute_mem_wb_j_type(self, parsed_instruction):
         """For execute mem wb of j type instructions
@@ -262,6 +266,21 @@ class Processor:
             prPurple("Executing jmp operation")
             address = int(parsed_instruction["address"], 2)
             self.pc = address << 2
+        
+        self.mem_read()
+        self.write_back(parsed_instruction)
+    
+    def mem_read(self):
+        if(self.memRead):
+            data = self.mem.read(self.alu.ALU_result)
+            return data
+    
+    def write_back(self, parsed_instruction):
+        if(self.regWrite):
+            if(self.regDst):
+                self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
+            else:
+                self.reg_file.write_register(parsed_instruction["rt"], self.alu.ALU_result)
 
     def store_instructions(self, file_name):
         """
