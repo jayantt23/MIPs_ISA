@@ -310,15 +310,3 @@ class Processor:
             print(
                 f"Register ${int(reg_num):02d}({self.reg_file.get_register_name(reg_num)}): {hex(reg_val)}"
             )
-
-
-if __name__ == "__main__":
-
-    processor = Processor()
-
-    processor.store_instructions("./insertion_sort.txt")
-    processor.print_instruction_memory()
-    processor.execute_instruction()
-
-    processor.print_state()
-    processor.print_instruction_memory()
