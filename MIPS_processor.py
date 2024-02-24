@@ -76,7 +76,7 @@ class Processor:
         
         return parsed_instruction
     
-    def execute_instruction(self):
+    def control_unit(self):
         """method to call fetch, decode, and then call the respective functions for the rest 
         of the stages based on opcode - no parameters"""
 
@@ -110,7 +110,7 @@ class Processor:
                 
                 self.print_control_signals()
                 prCyan(f"R type instruction")
-                self.execute_mem_wb_r_type(parsed_instruction)
+                self.execute_r_type(parsed_instruction)
                 
             elif opcode in [
                 "001000",
@@ -149,7 +149,7 @@ class Processor:
 
                 self.print_control_signals()
                 prCyan("I type instruction")
-                self.execute_mem_wb_i_type(parsed_instruction)
+                self.execute_i_type(parsed_instruction)
                 
             elif opcode in ["000010"]:
                 self.regDst = 0
@@ -166,7 +166,7 @@ class Processor:
                 prCyan("J type instruction")
                 self.execute_mem_wb_j_type(parsed_instruction)
 
-    def execute_mem_wb_r_type(self, parsed_instruction):
+    def execute_r_type(self, parsed_instruction):
         """For execute mem wb of r type instructions
         Params:
         - parsed_instruction(dict): Parsed Fields of instruction"""
@@ -196,7 +196,7 @@ class Processor:
         self.mem_read()
         self.write_back(parsed_instruction)
 
-    def execute_mem_wb_i_type(self, parsed_instruction):
+    def execute_i_type(self, parsed_instruction):
         """For execute mem wb of i type instructions
         parameters:
         - parsed instruction ( dict): Parsed fields of the instruction"""

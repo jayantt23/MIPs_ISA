@@ -8,7 +8,7 @@ def main():
     # processor.store_instructions("factorial.txt")
     processor.store_instructions("insertion_sort.txt")
 
-    processor.execute_instruction()
+    processor.control_unit()
 
     processor.print_state()
     processor.print_instruction_memory()
