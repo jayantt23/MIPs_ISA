@@ -9,7 +9,6 @@ def prPurple(skk):
 def prCyan(skk):
     print("\033[96m {}\033[00m".format(skk))
 
-
 class Processor:
     """Class for representing a MIPS processor, initialized with its components, and methods for different stages of the 5 stage cycle and for printing the state"""
 
@@ -18,18 +17,19 @@ class Processor:
         self.reg_file = Register_file()
         self.alu = ALU()
         self.pc = 0x00400000
+        self.clk = 0
 
-        self.control_signals = {
-            "reg_dst": 1,  # just some default values
-            "alu_src": 1,
-            "mem_to_reg": 0,
-            "mem_read": 0,
-            "mem_write": 0,
-            "branch": 0,
-            "alu_op": "add",  #  can make it into number, basically solve the k-maps for all the instructions we have implemented
-            "reg_write": 0,
-        }
-
+        # Control Signals
+        self.regDst = 0
+        self.branch = 0
+        self.memRead = 0
+        self.memToReg = 0
+        self.aluOp = 00
+        self.memWrite = 0
+        self.aluSrc = 0
+        self.regWrite = 0
+        self.jump = 0
+    
     def fetch(self):
         """Fetch the next instruction from memory.
         It takes no parameters
@@ -43,7 +43,7 @@ class Processor:
         instruction = format(self.mem.memory[self.pc], "032b")
         self.pc += 4
         return instruction
-
+    
     def decode(self, instruction):
         """Decode the instruction and extract its fields.
         Parameters:
@@ -60,74 +60,7 @@ class Processor:
         funct = instruction[26:32]
         address = instruction[6:32]
         immediate = instruction[16:32]
-
-        if opcode == "000000":
-            # if its r format, we use rd ie 15:11 as destination so reg dst is 1
-            # alu scr, we use rt and not immediate so its 0
-            # mem to reg, its dont care
-            # mem read adn write would be zero
-            # branch would be zero
-            self.control_signals["reg_dst"] = 1
-            self.control_signals["alu_src"] = 0
-            self.control_signals["mem_to_reg"] = 0
-            self.control_signals["mem_read"] = 0
-            self.control_signals["mem_write"] = 0
-            self.control_signals["branch"] = 0
-            self.control_signals["reg_write"] = 1
-
-            if funct == "100000":
-                self.control_signals["alu_op"] = "add"
-            elif funct == "100010":
-                self.control_signals["alu_op"] = "sub"
-            elif funct == "101010":
-                self.control_signals["alu_op"] = "slt"
-
-        elif opcode in [
-            "001000",
-            "001001",
-            "101011",
-            "100011",
-            "000100",
-            "000101",
-            "001100",
-            "001101",
-            "001010",
-            "001111",
-            "001101",
-        ]:
-            self.control_signals["reg_dst"] = 0
-            self.control_signals["alu_src"] = 1
-            self.control_signals["mem_to_reg"] = 1 if opcode in ["001000", "001001"] else 0
-            self.control_signals["mem_read"] = 1 if opcode == "100011" else 0
-            self.control_signals["mem_write"] = 1 if opcode == "101011" else 0
-            self.control_signals["branch"] = 1 if opcode in ["000100", "000101"] else 0
-            self.control_signals["reg_write"] = 1
-            self.control_signals["alu_op"] = (
-                "add"
-                if opcode
-                in [
-                    "001000",
-                    "001001",
-                    "101011",
-                    "001100",
-                    "001101",
-                    "001010",
-                    "001111",
-                    "001101",
-                ]
-                else "sub"  # for branch
-            )
-
-        elif opcode in ["000010"]:
-            self.control_signals["reg_write"] = 0
-            self.control_signals["reg_dst"] = 0  # since j type don't care
-            self.control_signals["alu_src"] = 0  # don't care
-            self.control_signals["mem_to_reg"] = 0  # don't care
-            self.control_signals["mem_read"] = 0
-            self.control_signals["mem_write"] = 0
-            self.control_signals["branch"] = 1
-            self.control_signals["alu_op"] = "sub"
-
+        
         parsed_instruction = {
             "opcode": opcode,
             "rs": rs,
@@ -137,13 +70,12 @@ class Processor:
             "funct": funct,
             "address": address,
             "immediate": immediate,
-            "control_signals": self.control_signals,
         }
-
+        
         print(f"parsed instruction is {parsed_instruction}")
-
+        
         return parsed_instruction
-
+    
     def execute_instruction(self):
         """method to call fetch, decode, and then call the respective functions for the rest 
         of the stages based on opcode - no parameters"""
@@ -152,18 +84,34 @@ class Processor:
 
             instruction = self.fetch()
             print(f"Instruction returned from fetch cycle is {instruction}")
-            # if instruction == "halt":  # look up what shoud go here
-            #     break
 
             if not instruction:
                 break
-
+            
             parsed_instruction = self.decode(instruction)
             opcode = parsed_instruction["opcode"]
 
             if opcode == "000000":  # R-type
+                self.regDst = 1
+                self.branch = 0
+                self.memRead = 0
+                self.memToReg = 0
+                self.memWrite = 0
+                self.aluSrc = 0
+                self.regWrite = 1
+                self.jump = 0
+                
+                if parsed_instruction["funct"] == "100000":
+                    self.aluOp = 0b00
+                elif parsed_instruction["funct"] == "100010":
+                    self.aluOp = 0b01
+                elif parsed_instruction["funct"] == "101010":
+                    self.aluOp = 0b10
+                
+                self.print_control_signals()
                 prCyan(f"R type instruction")
                 self.execute_mem_wb_r_type(parsed_instruction)
+                
             elif opcode in [
                 "001000",
                 "001001",
@@ -176,10 +124,45 @@ class Processor:
                 "001010",
                 "001111",
                 "001101",
-            ]:
+            ]:  
+                self.regDst = 0
+                self.branch = 1 if opcode in ["000100", "000101"] else 0
+                self.memRead = 1 if opcode == "100011" else 0
+                self.memToReg = 1 if opcode in ["001000", "001001"] else 0
+                self.aluOp = (
+                0b00 if opcode in [
+                    "001000",
+                    "001001",
+                    "101011",
+                    "001100",
+                    "001101",
+                    "001010",
+                    "001111",
+                    "001101",
+                ]
+                else 0b01  # for branch
+            )
+                self.memWrite = 1 if opcode == "101011" else 0
+                self.aluSrc = 1
+                self.regWrite = 1
+                self.jump = 0
+
+                self.print_control_signals()
                 prCyan("I type instruction")
                 self.execute_mem_wb_i_type(parsed_instruction)
+                
             elif opcode in ["000010"]:
+                self.regDst = 0
+                self.branch = 0
+                self.memRead = 0
+                self.memToReg = 0
+                self.aluOp = 0b00
+                self.memWrite = 0
+                self.aluSrc = 0
+                self.regWrite = 0
+                self.jump = 1
+                
+                self.print_control_signals()
                 prCyan("J type instruction")
                 self.execute_mem_wb_j_type(parsed_instruction)
 
@@ -316,6 +299,9 @@ class Processor:
             "-----------------------------------------------------------------------------"
         )
 
+    def print_control_signals(self):
+        print(f"Control Signals: regDst = {self.regDst}, branch = {self.branch}, memRead = {self.memRead}, memToReg = {self.memToReg}, aluOp = {self.aluOp}, memWrite = {self.memWrite}, aluSrc = {self.aluSrc}, regWrite = {self.regWrite} and jump = {self.jump}")
+    
     def print_state(self):
         print("Processor State:")
         print("Program Counter (PC):", hex(self.pc))
