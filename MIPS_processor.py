@@ -9,6 +9,7 @@ def prPurple(skk):
 def prCyan(skk):
     print("\033[96m {}\033[00m".format(skk))
 
+
 class Processor:
     """Class for representing a MIPS processor, initialized with its components, and methods for different stages of the 5 stage cycle and for printing the state"""
 
@@ -29,7 +30,7 @@ class Processor:
         self.aluSrc = 0
         self.regWrite = 0
         self.jump = 0
-    
+
     def fetch(self):
         """Fetch the next instruction from memory.
         It takes no parameters
@@ -43,7 +44,7 @@ class Processor:
         instruction = format(self.mem.memory[self.pc], "032b")
         self.pc += 4
         return instruction
-    
+
     def decode(self, instruction):
         """Decode the instruction and extract its fields.
         Parameters:
@@ -60,7 +61,7 @@ class Processor:
         funct = instruction[26:32]
         address = instruction[6:32]
         immediate = instruction[16:32]
-        
+
         parsed_instruction = {
             "opcode": opcode,
             "rs": rs,
@@ -71,13 +72,13 @@ class Processor:
             "address": address,
             "immediate": immediate,
         }
-        
+
         print(f"parsed instruction is {parsed_instruction}")
-        
+
         return parsed_instruction
-    
+
     def control_unit(self):
-        """method to call fetch, decode, and then call the respective functions for the rest 
+        """method to call fetch, decode, and then call the respective functions for the rest
         of the stages based on opcode - no parameters"""
 
         while True:
@@ -87,7 +88,7 @@ class Processor:
 
             if not instruction:
                 break
-            
+
             parsed_instruction = self.decode(instruction)
             opcode = parsed_instruction["opcode"]
 
@@ -100,18 +101,18 @@ class Processor:
                 self.aluSrc = 0
                 self.regWrite = 1
                 self.jump = 0
-                
+
                 if parsed_instruction["funct"] == "100000":
                     self.aluOp = 0b00
                 elif parsed_instruction["funct"] == "100010":
                     self.aluOp = 0b01
                 elif parsed_instruction["funct"] == "101010":
                     self.aluOp = 0b10
-                
+
                 self.print_control_signals()
                 prCyan(f"R type instruction")
                 self.execute_r_type(parsed_instruction)
-                
+
             elif opcode in [
                 "001000",
                 "001001",
@@ -124,24 +125,26 @@ class Processor:
                 "001010",
                 "001111",
                 "001101",
-            ]:  
+            ]:
                 self.regDst = 0
                 self.branch = 1 if opcode in ["000100", "000101"] else 0
                 self.memRead = 1 if opcode == "100011" else 0
                 self.memToReg = 1 if opcode in ["001000", "001001"] else 0
                 self.aluOp = (
-                0b00 if opcode in [
-                    "001000",
-                    "001001",
-                    "101011",
-                    "001100",
-                    "001101",
-                    "001010",
-                    "001111",
-                    "001101",
-                ]
-                else 0b01  # for branch
-            )
+                    0b00
+                    if opcode
+                    in [
+                        "001000",
+                        "001001",
+                        "101011",
+                        "001100",
+                        "001101",
+                        "001010",
+                        "001111",
+                        "001101",
+                    ]
+                    else 0b01  # for branch
+                )
                 self.memWrite = 1 if opcode == "101011" else 0
                 self.aluSrc = 1
                 self.regWrite = 1
@@ -150,7 +153,7 @@ class Processor:
                 self.print_control_signals()
                 prCyan("I type instruction")
                 self.execute_i_type(parsed_instruction)
-                
+
             elif opcode in ["000010"]:
                 self.regDst = 0
                 self.branch = 0
@@ -161,7 +164,7 @@ class Processor:
                 self.aluSrc = 0
                 self.regWrite = 0
                 self.jump = 1
-                
+
                 self.print_control_signals()
                 prCyan("J type instruction")
                 self.execute_mem_wb_j_type(parsed_instruction)
@@ -192,7 +195,7 @@ class Processor:
             if self.alu.srcB < 0:
                 self.alu.srcB = -self.alu.srcB
             self.alu.execute_operation("100000")  # add operation
-        
+
         self.mem_read()
         self.write_back(parsed_instruction)
 
@@ -252,7 +255,7 @@ class Processor:
         elif opcode == "001111":  # lui operation
             prPurple("Executing lui operation")
             self.alu.ALU_result = immediate << 16
-        
+
         self.mem_read()
         self.write_back(parsed_instruction)
 
@@ -266,21 +269,27 @@ class Processor:
             prPurple("Executing jmp operation")
             address = int(parsed_instruction["address"], 2)
             self.pc = address << 2
-        
+
         self.mem_read()
         self.write_back(parsed_instruction)
-    
+
     def mem_read(self):
-        if(self.memRead):
+        """Class method to read from memory the address obtained from ALU result during the mem access stage"""
+        if self.memRead:
             data = self.mem.read(self.alu.ALU_result)
             return data
-    
+
     def write_back(self, parsed_instruction):
-        if(self.regWrite):
-            if(self.regDst):
-                self.reg_file.write_register(parsed_instruction["rd"], self.alu.ALU_result)
+        """Class method to write to the register file during the write back stage of the non pipelined 5 stage processor"""
+        if self.regWrite:
+            if self.regDst:
+                self.reg_file.write_register(
+                    parsed_instruction["rd"], self.alu.ALU_result
+                )
             else:
-                self.reg_file.write_register(parsed_instruction["rt"], self.alu.ALU_result)
+                self.reg_file.write_register(
+                    parsed_instruction["rt"], self.alu.ALU_result
+                )
 
     def store_instructions(self, file_name):
         """
@@ -319,8 +328,10 @@ class Processor:
         )
 
     def print_control_signals(self):
-        print(f"Control Signals: regDst = {self.regDst}, branch = {self.branch}, memRead = {self.memRead}, memToReg = {self.memToReg}, aluOp = {self.aluOp}, memWrite = {self.memWrite}, aluSrc = {self.aluSrc}, regWrite = {self.regWrite} and jump = {self.jump}")
-    
+        print(
+            f"Control Signals: regDst = {self.regDst}, branch = {self.branch}, memRead = {self.memRead}, memToReg = {self.memToReg}, aluOp = {self.aluOp}, memWrite = {self.memWrite}, aluSrc = {self.aluSrc}, regWrite = {self.regWrite} and jump = {self.jump}"
+        )
+
     def print_state(self):
         print("Processor State:")
         print("Program Counter (PC):", hex(self.pc))
