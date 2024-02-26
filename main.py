@@ -19,6 +19,8 @@ def main():
         processor.mem.write(0x10010000, k)
     elif(n==3):
         processor.store_instructions("insertion_sort.txt")
+    else:
+        exit()
 
     processor.control_unit()
 
