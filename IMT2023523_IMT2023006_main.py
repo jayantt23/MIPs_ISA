@@ -1,0 +1,51 @@
+from IMT2023523_IMT2023006_MIPS_processor import Processor
+
+
+def main():
+    processor = Processor()
+
+    print(
+        "Program 1: Sorting array [-2, 1, 0, 3, 2, -8, 6, 10, 9] using Insertion Sort"
+    )
+    print("Program 2: Factorial of given input")
+    print("Program 3: Linear Search of given input in array [1, 4, 3, 2, 7, 6]")
+    n = int(input("Which program do you want to run: "))
+
+    if n == 1:
+        processor.store_instructions("IMT2023523_IMT2023006_insertion_sort.txt")
+    elif n == 2:
+        processor.store_instructions("IMT2023523_IMT2023006_factorial.txt")
+        k = int(input("n: "))
+        processor.mem.write(0x10010000, k)
+    elif n == 3:
+        processor.store_instructions("IMT2023523_IMT2023006_search.txt")
+        k = int(input("Search Value: "))
+        processor.mem.write(0x10010000 + 0x18, k)
+    else:
+        exit()
+
+    processor.control_unit()
+
+    processor.print_state()
+    processor.print_instruction_memory()
+
+    if n == 1:
+        print(
+            "Output array:",
+            processor.mem.read(0x10010000),
+            processor.mem.read(0x10010000 + 0x4),
+            processor.mem.read(0x10010000 + 0x8),
+            processor.mem.read(0x10010000 + 0xC),
+            processor.mem.read(0x10010000 + 0x10),
+            processor.mem.read(0x10010000 + 0x14),
+            processor.mem.read(0x10010000 + 0x18),
+            processor.mem.read(0x10010000 + 0x1C),
+            processor.mem.read(0x10010000 + 0x20),
+        )
+    elif n == 2:
+        print("Output of factorial ($s1):", processor.mem.read(0x10010000 + 0x4))
+    elif n == 3:
+        print("Output of Search ($t2):", processor.mem.read(0x10010020))
+
+
+main()
