@@ -37,5 +37,3 @@ def main():
         print("Output of Search ($t2):", processor.mem.read(0x10010020))
 
 main()
-
-# for search value stored in t2
